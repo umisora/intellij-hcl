@@ -42,7 +42,7 @@ public class HCLFormatterListsTest extends HCLFormatterBaseTestCase {
         "foo = [             \"zeynep\", \n" +
             "\"arslan\", ]",
         "foo = [\"zeynep\",\n" +
-            "\t\"arslan\",\n" +
+            "  \"arslan\",\n" +
             "]"
     );
   }
@@ -59,7 +59,7 @@ public class HCLFormatterListsTest extends HCLFormatterBaseTestCase {
             "foo = [\"fatih\", \"zeynep\",\n" +
                 "\"arslan\", ]",
             "foo = [\"fatih\", \"zeynep\",\n" +
-            "\t\"arslan\",\n" +
+            "  \"arslan\",\n" +
             "]"
     );
   }
@@ -70,9 +70,9 @@ public class HCLFormatterListsTest extends HCLFormatterBaseTestCase {
             "\t\"vim-go\", \n" +
             "\t\"golang\", \"hcl\"]",
         "foo = [\n" +
-            "\t\"vim-go\",\n" +
-            "\t\"golang\",\n" +
-            "\t\"hcl\",\n" +
+            "  \"vim-go\",\n" +
+            "  \"golang\",\n" +
+            "  \"hcl\",\n" +
             "]"
     );
   }
@@ -83,9 +83,9 @@ public class HCLFormatterListsTest extends HCLFormatterBaseTestCase {
             "\t\"kenya\",        \"ethiopia\",\n" +
             "\t\"columbia\"]",
         "foo = [\n" +
-            "\t\"kenya\",\n" +
-            "\t\"ethiopia\",\n" +
-            "\t\"columbia\",\n" +
+            "  \"kenya\",\n" +
+            "  \"ethiopia\",\n" +
+            "  \"columbia\",\n" +
             "]"
     );
   }
