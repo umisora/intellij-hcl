@@ -26,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 @State(
     name = "TerraformToolProjectSettings",
@@ -47,6 +49,7 @@ public class TerraformToolProjectSettings implements PersistentStateComponent<Te
   @Override
   public void loadState(State state) {
     myState.myTerraformPath = state.myTerraformPath;
+    myState.myMetadataVersion = state.myMetadataVersion;
   }
 
   public String getTerraformPath() {
@@ -57,8 +60,20 @@ public class TerraformToolProjectSettings implements PersistentStateComponent<Te
     myState.myTerraformPath = terraformPath;
   }
 
+  public String getMetadataVersion() {
+    return myState.myMetadataVersion;
+  }
+
+  public void setMetadataVersion(String version) {
+    myState.myMetadataVersion = version;
+  }
+
   public static class State {
     public String myTerraformPath = getDefaultTerraformPath();
+    public String myMetadataVersion = getDefaultMetadataVersion();
+
+    public String myLastMetadataETag = null;
+    public List<String> myLastMetadataVersions = new ArrayList<String>();
   }
 
   private static String getDefaultTerraformPath() {
@@ -73,6 +88,10 @@ public class TerraformToolProjectSettings implements PersistentStateComponent<Te
     } else {
       return "terraform.exe";
     }
+  }
+
+  private static String getDefaultMetadataVersion() {
+    return "bundled";
   }
 
 }

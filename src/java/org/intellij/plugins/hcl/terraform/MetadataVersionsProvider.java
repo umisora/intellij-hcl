@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 JetBrains s.r.o.
+ * Copyright 2000-2017 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,12 @@
  */
 package org.intellij.plugins.hcl.terraform;
 
-import com.intellij.openapi.options.ConfigurableBase;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-public class TerraformToolConfigurable extends ConfigurableBase<TerraformSettingsPanel, TerraformToolProjectSettings> {
-  private final Project myProject;
+import java.util.List;
 
-  public TerraformToolConfigurable(Project project) {
-    super("reference.settingsdialog.project.terraform", "Terraform", null);
-    myProject = project;
-  }
-
+public interface MetadataVersionsProvider {
   @NotNull
-  @Override
-  protected TerraformToolProjectSettings getSettings() {
-    return TerraformToolProjectSettings.getInstance(myProject);
-  }
-
-  @Override
-  protected TerraformSettingsPanel createUi() {
-    return new TerraformSettingsPanel(myProject);
-  }
+  List<String> getAvailableVersions(@NotNull Project project);
 }

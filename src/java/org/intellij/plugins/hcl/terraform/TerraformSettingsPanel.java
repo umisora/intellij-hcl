@@ -15,18 +15,28 @@
  */
 package org.intellij.plugins.hcl.terraform;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.options.ConfigurableUi;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBoxWithWidePopup;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.List;
 
 public class TerraformSettingsPanel implements ConfigurableUi<TerraformToolProjectSettings> {
+  private final Project myProject;
   private JPanel myWholePanel;
   private TextFieldWithBrowseButton myTerraformPathField;
+  private ComboBoxWithWidePopup myMetadataVersionComboBox;
+
+  public TerraformSettingsPanel(Project project) {
+    myProject = project;
+  }
 
   @NotNull
   @Override
@@ -47,16 +57,31 @@ public class TerraformSettingsPanel implements ConfigurableUi<TerraformToolProje
 
   @Override
   public boolean isModified(@NotNull TerraformToolProjectSettings settings) {
-    return !Comparing.equal(myTerraformPathField.getText(), settings.getTerraformPath());
+    return !Comparing.equal(myTerraformPathField.getText(), settings.getTerraformPath())
+        || !Comparing.equal(myMetadataVersionComboBox.getSelectedItem(), settings.getMetadataVersion());
   }
 
   @Override
   public void apply(@NotNull TerraformToolProjectSettings settings) {
     settings.setTerraformPath(myTerraformPathField.getText());
+    final Object selected = myMetadataVersionComboBox.getSelectedItem();
+    settings.setMetadataVersion(selected != null ? selected.toString() : null);
   }
 
   @Override
   public void reset(@NotNull TerraformToolProjectSettings settings) {
     myTerraformPathField.setText(settings.getTerraformPath());
+    myMetadataVersionComboBox.removeAllItems();
+    final String v = settings.getMetadataVersion();
+    if (v != null) {
+      //noinspection unchecked
+      myMetadataVersionComboBox.addItem(v);
+      myMetadataVersionComboBox.setSelectedItem(v);
+    }
+    final List<String> versions = ServiceManager.getService(MetadataVersionsProvider.class).getAvailableVersions(myProject);
+    for (String version : versions) {
+      //noinspection unchecked
+      myMetadataVersionComboBox.addItem(version);
+    }
   }
 }
