@@ -74,7 +74,7 @@ open class HCLParserDefinition : ParserDefinition {
   override fun spaceExistanceTypeBetweenTokens(left: ASTNode, right: ASTNode) = ParserDefinition.SpaceRequirements.MAY
 
   companion object {
-    val WHITE_SPACES: TokenSet = TokenSet.create(TokenType.WHITE_SPACE)
+    @JvmField val WHITE_SPACES: TokenSet = TokenSet.create(TokenType.WHITE_SPACE)
     val STRING_LITERALS: TokenSet = TokenSet.create(SINGLE_QUOTED_STRING, DOUBLE_QUOTED_STRING)
 
     val IDENTIFYING_LITERALS: TokenSet = TokenSet.create(SINGLE_QUOTED_STRING, DOUBLE_QUOTED_STRING, ID)
