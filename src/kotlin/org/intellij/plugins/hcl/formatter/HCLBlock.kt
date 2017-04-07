@@ -25,18 +25,16 @@ import com.intellij.psi.tree.TokenSet
 import org.intellij.plugins.hcl.HCLElementTypes.*
 import org.intellij.plugins.hcl.HCLParserDefinition
 import org.intellij.plugins.hcl.psi.HCLPsiUtil
+import java.util.*
 
 class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Alignment?, val spacingBuilder: SpacingBuilder, val _indent: Indent?, val settings: HCLCodeStyleSettings) : AbstractBlock(node, wrap, alignment) {
   val myChildWrap: Wrap?
   val myAlwaysWrap: Wrap?
-  val myPropertyValueAlignment: Alignment?
-  val myCommentValueAlignment: Alignment? by lazy { if (isElementType(myNode, OBJECT, ARRAY)) Alignment.createAlignment(true) else null }
+  var myPropertyAlignment: Alignment? = null
+  var myLastValueAlignment: Alignment? = null
+  var myLastValueCommentAlignment: Alignment? = null
 
   init {
-    myPropertyValueAlignment =
-        if (settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.DO_NOT_ALIGN_PROPERTY) null
-        else if (isElementType(node, OBJECT) || isFile(node)) Alignment.createAlignment(true)
-        else null
     myChildWrap = when (node.elementType) {
       OBJECT -> Wrap.createWrap(settings.OBJECT_WRAPPING, true)
       ARRAY -> Wrap.createWrap(settings.ARRAY_WRAPPING, true)
@@ -50,11 +48,42 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
   val ALL_BRACES: TokenSet = TokenSet.orSet(OPEN_BRACES, CLOSE_BRACES)
 
   override fun buildChildren(): MutableList<Block>? {
-    return myNode.getChildren(null).map {
-      if (isWhitespaceOrEmpty(it)) null
-      else makeSubBlock(it)
-    }.filterNotNull().toMutableList()
+    val children = myNode.getChildren(null)
+    val result = ArrayList<Block>()
+    for (child in children) {
+      if (isWhitespaceOrEmpty(child)) {
+        if (child.elementType == TokenType.WHITE_SPACE && child.text.contains(Regex("(\r?\n){2,}"))) {
+          myLastValueAlignment = null
+          myLastValueCommentAlignment = null
+        }
+      } else {
+        if (child.textContains('\n') || (isElementType(child, HCLParserDefinition.HCL_COMMENTARIES) && child.treePrev?.textContains('\n') ?: false)) {
+          myLastValueAlignment = null
+          myLastValueCommentAlignment = null
+        }
+        result.add(makeSubBlock(child))
+      }
+    }
+    return result
   }
+
+  private fun getLastPropertyAlignment(): Alignment? {
+    if (myLastValueAlignment == null) {
+      myLastValueAlignment =
+          if (settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.DO_NOT_ALIGN_PROPERTY) null
+          else if (isElementType(node, OBJECT) || isFile(node)) Alignment.createAlignment(true)
+          else null
+    }
+    return myLastValueAlignment
+  }
+
+  private fun getLastCommentAlignment(): Alignment? {
+    if (myLastValueCommentAlignment == null) {
+      myLastValueCommentAlignment = if (isElementType(myNode, OBJECT, ARRAY)) Alignment.createAlignment(true) else null
+    }
+    return myLastValueCommentAlignment
+  }
+
 
   private fun makeSubBlock(childNode: ASTNode): HCLBlock {
     var indent = Indent.getNoneIndent()
@@ -65,7 +94,9 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
       assert(myChildWrap != null) { "myChildWrap should not be null for container, ${myNode.elementType}" }
 
       if (isElementType(childNode, COMMA)) {
+        // The only case for wrapping - previous element is Heredoc
         wrap = Wrap.createWrap(WrapType.NONE, true)
+        indent = Indent.getNormalIndent()
       } else if (isElementType(childNode, HCLParserDefinition.HCL_COMMENTARIES)) {
         if (isElementType(myNode, ARRAY)) {
           // Check if comment either standalone or attached to element
@@ -73,8 +104,11 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
             wrap = myAlwaysWrap
             indent = Indent.getNormalIndent()
           } else {
-            alignment = myCommentValueAlignment
+            alignment = getLastCommentAlignment()
           }
+        } else if (!isStandaloneComment(childNode)){
+          alignment = getLastCommentAlignment()
+          indent = Indent.getNormalIndent()
         } else {
           indent = Indent.getNormalIndent()
         }
@@ -90,8 +124,8 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
       } else if (isElementType(childNode, OPEN_BRACES)) {
         if (HCLPsiUtil.isPropertyValue(myNode.psi) && settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.ALIGN_PROPERTY_ON_VALUE) {
           // WEB-13587 Align compound values on opening brace/bracket, not the whole block
-          assert(parent != null && parent.parent != null && parent.parent.myPropertyValueAlignment != null)
-          alignment = parent!!.parent!!.myPropertyValueAlignment
+          assert(parent != null && parent.myPropertyAlignment != null)
+          alignment = parent!!.myPropertyAlignment
         }
       } else if (isElementType(childNode, CLOSE_BRACES)) {
         if (!isOnSameLineAsFirstChildrenOfParent(childNode)) {
@@ -102,7 +136,7 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
       // Handle properties alignment
       assert(parent != null)
       parent!!
-      val pva = parent.myPropertyValueAlignment
+      val pva = myPropertyAlignment
       if (isElementType(childNode, EQUALS) && settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.ALIGN_PROPERTY_ON_EQUALS) {
         assert(pva != null) { "Expected not null PVA, node ${node.elementType}, parent ${parent.node.elementType}" }
         alignment = pva
@@ -124,7 +158,11 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
         }
       }
     }
-    return HCLBlock(this, childNode, wrap, alignment, spacingBuilder, indent, settings)
+    val block = HCLBlock(this, childNode, wrap, alignment, spacingBuilder, indent, settings)
+    if (isElementType(childNode, PROPERTY)) {
+      block.myPropertyAlignment = getLastPropertyAlignment()
+    }
+    return block
   }
 
   private fun isStandaloneComment(childNode: ASTNode): Boolean {
@@ -178,11 +216,11 @@ class HCLBlock(val parent: HCLBlock?, node: ASTNode, wrap: Wrap?, alignment: Ali
     if (isElementType(myNode, PROPERTY)) {
       if (newChildIndex == 1 && settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.ALIGN_PROPERTY_ON_EQUALS) {
         // equals
-        return myPropertyValueAlignment
+        return myLastValueAlignment
       }
       if (newChildIndex == 2 && settings.PROPERTY_ALIGNMENT == HCLCodeStyleSettings.ALIGN_PROPERTY_ON_VALUE) {
         // Property value
-        return myPropertyValueAlignment
+        return myLastValueAlignment
       }
     }
     return null
