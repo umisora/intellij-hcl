@@ -153,6 +153,7 @@
 
     <!-- Inject TIL into TerraformConfig -->
     <languageInjector implementation="org.intellij.plugins.hil.ILLanguageInjector"/>
+    <languageInjector implementation="org.intellij.plugins.hil.ILinILLanguageInjector"/>
 
     <!-- Terraform Config language -->
     <fileTypeFactory implementation="org.intellij.plugins.hcl.terraform.config.TerraformFileTypeFactory"/>

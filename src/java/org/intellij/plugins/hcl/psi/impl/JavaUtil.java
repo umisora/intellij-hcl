@@ -59,7 +59,7 @@ public class JavaUtil {
   }
 
   @NotNull
-  static List<Pair<TextRange, String>> doGetTextFragments(@NotNull String text, boolean interpolations, boolean quotes) {
+  public static List<Pair<TextRange, String>> doGetTextFragments(@NotNull String text, boolean interpolations, boolean quotes) {
     List<Pair<TextRange, String>> result;
     result = new ArrayList<Pair<TextRange, String>>();
     final int length = text.length();
