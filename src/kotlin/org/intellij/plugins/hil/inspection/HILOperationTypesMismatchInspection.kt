@@ -114,7 +114,7 @@ class HILOperationTypesMismatchInspection : LocalInspectionTool() {
         // Ok
       } else if (type == Types.String) {
         // Semi ok
-        if (condition is ILLiteralExpression && condition.doubleQuotedString != null) {
+        if (condition is ILStringLiteralExpression) {
           if (!GoUtil.isBoolean(condition.unquotedText!!)) {
             holder.registerProblem(condition, "Condition should be boolean or string with boolean value", ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
           }

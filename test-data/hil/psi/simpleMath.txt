@@ -7,7 +7,7 @@ HILFile: a.hil
           PsiElement(ID)('format')
         ILParameterList
           PsiElement(()('(')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('""')
           PsiElement(,)(',')
           PsiWhiteSpace(' ')

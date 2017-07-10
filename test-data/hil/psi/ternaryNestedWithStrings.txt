@@ -9,16 +9,16 @@ HILFile: a.hil
           PsiWhiteSpace(' ')
           PsiElement(==)('==')
           PsiWhiteSpace(' ')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"1"')
         PsiWhiteSpace(' ')
         PsiElement(?)('?')
         PsiWhiteSpace(' ')
-        ILLiteral
+        ILStringLiteralExpression
           PsiElement(DOUBLE_QUOTED_STRING)('"${b == "2" ? "x" : "y"}"')
         PsiWhiteSpace(' ')
         PsiElement(:)(':')
         PsiWhiteSpace(' ')
-        ILLiteral
+        ILStringLiteralExpression
           PsiElement(DOUBLE_QUOTED_STRING)('"z"')
       PsiElement(})('}')

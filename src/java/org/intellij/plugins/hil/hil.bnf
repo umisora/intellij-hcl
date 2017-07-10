@@ -92,6 +92,7 @@ ILExpression ::=
   | ILIndexSelectExpression
   | ILVariable
   | ILUnaryExpression
+  | ILStringLiteralExpression
   | ILLiteralExpression
 {
   name="expression"
@@ -150,13 +151,19 @@ ILMethodCallExpression ::= ILExpression ILParameterList
   ]
 }
 
-ILLiteralExpression ::= literal /*| identifier*/ | number | 'true' | 'false' | 'null' {
+ILLiteralExpression ::= /*identifier | */ number | 'true' | 'false' | 'null' {
   name="Literal"
   mixin="org.intellij.plugins.hil.psi.impl.ILExpressionWithReference"
   methods=[
     getType
     getUnquotedText
   ]
+}
+
+ILStringLiteralExpression ::= literal {
+  name="StringLiteral"
+  mixin="org.intellij.plugins.hil.psi.impl.ILStringLiteralMixin"
+  extends=ILLiteralExpression
 }
 
 ILParameterList ::= '(' (ILExpression? (',' ILExpression )* )?')' {

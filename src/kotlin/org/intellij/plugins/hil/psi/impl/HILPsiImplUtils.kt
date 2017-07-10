@@ -45,8 +45,8 @@ object HILPsiImplUtils {
   }
 
   fun getUnquotedText(literal: ILLiteralExpression): String? {
-    val dqs = literal.doubleQuotedString
-    if (dqs != null) {
+    if (literal is ILStringLiteralExpression) {
+      val dqs = literal.doubleQuotedString
       return StringUtil.unquoteString(dqs.text)
     }
     return literal.text

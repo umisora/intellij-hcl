@@ -11,7 +11,7 @@ HILFile: a.hil
             ILVariable
               PsiElement(ID)('web')
           PsiElement(.)('.')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"*"')
         PsiElement(.)('.')
         ILVariable

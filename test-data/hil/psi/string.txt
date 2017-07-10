@@ -7,7 +7,7 @@ HILFile: a.hil
           PsiElement(ID)('file')
         ILParameterList
           PsiElement(()('(')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"ecs-container-definitions.json"')
           PsiElement())(')')
       PsiElement(})('}')

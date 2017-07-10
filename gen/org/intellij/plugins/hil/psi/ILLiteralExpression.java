@@ -9,9 +9,6 @@ import org.intellij.plugins.hcl.terraform.config.model.Type;
 public interface ILLiteralExpression extends ILExpression {
 
   @Nullable
-  PsiElement getDoubleQuotedString();
-
-  @Nullable
   PsiElement getNumber();
 
   @Nullable

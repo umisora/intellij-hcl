@@ -9,16 +9,15 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.intellij.plugins.hil.HILElementTypes.*;
 import org.intellij.plugins.hil.psi.*;
-import org.intellij.plugins.hcl.terraform.config.model.Type;
 
-public class ILLiteralExpressionImpl extends ILExpressionWithReference implements ILLiteralExpression {
+public class ILStringLiteralExpressionImpl extends ILStringLiteralMixin implements ILStringLiteralExpression {
 
-  public ILLiteralExpressionImpl(ASTNode node) {
+  public ILStringLiteralExpressionImpl(ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull ILGeneratedVisitor visitor) {
-    visitor.visitILLiteralExpression(this);
+    visitor.visitILStringLiteralExpression(this);
   }
 
   public void accept(@NotNull PsiElementVisitor visitor) {
@@ -27,19 +26,9 @@ public class ILLiteralExpressionImpl extends ILExpressionWithReference implement
   }
 
   @Override
-  @Nullable
-  public PsiElement getNumber() {
-    return findChildByType(NUMBER);
-  }
-
-  @Nullable
-  public Type getType() {
-    return HILPsiImplUtilJ.getType(this);
-  }
-
-  @Nullable
-  public String getUnquotedText() {
-    return HILPsiImplUtilJ.getUnquotedText(this);
+  @NotNull
+  public PsiElement getDoubleQuotedString() {
+    return findNotNullChildByType(DOUBLE_QUOTED_STRING);
   }
 
 }

@@ -9,7 +9,7 @@ HILFile: a.hil
           PsiWhiteSpace(' ')
           PsiElement(==)('==')
           PsiWhiteSpace(' ')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"1"')
         PsiWhiteSpace(' ')
         PsiElement(?)('?')
@@ -21,21 +21,21 @@ HILFile: a.hil
             PsiWhiteSpace(' ')
             PsiElement(==)('==')
             PsiWhiteSpace(' ')
-            ILLiteral
+            ILStringLiteralExpression
               PsiElement(DOUBLE_QUOTED_STRING)('"2"')
           PsiWhiteSpace(' ')
           PsiElement(?)('?')
           PsiWhiteSpace(' ')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"x"')
           PsiWhiteSpace(' ')
           PsiElement(:)(':')
           PsiWhiteSpace(' ')
-          ILLiteral
+          ILStringLiteralExpression
             PsiElement(DOUBLE_QUOTED_STRING)('"y"')
         PsiWhiteSpace(' ')
         PsiElement(:)(':')
         PsiWhiteSpace(' ')
-        ILLiteral
+        ILStringLiteralExpression
           PsiElement(DOUBLE_QUOTED_STRING)('"z"')
       PsiElement(})('}')

@@ -1,4 +1,4 @@
 HILFile: a.hil
   ILExpressionHolder
-    ILLiteral
+    ILStringLiteralExpression
       PsiElement(DOUBLE_QUOTED_STRING)('"${"${"${1+1}"}"}"')

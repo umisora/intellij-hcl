@@ -43,7 +43,8 @@ public class HILParser implements PsiParser, LightPsiParser {
     create_token_set_(IL_BINARY_ADDITION_EXPRESSION, IL_BINARY_AND_EXPRESSION, IL_BINARY_EQUALITY_EXPRESSION, IL_BINARY_MULTIPLY_EXPRESSION,
       IL_BINARY_OR_EXPRESSION, IL_BINARY_RELATIONAL_EXPRESSION, IL_CONDITIONAL_EXPRESSION, IL_EXPRESSION,
       IL_EXPRESSION_HOLDER, IL_INDEX_SELECT_EXPRESSION, IL_LITERAL_EXPRESSION, IL_METHOD_CALL_EXPRESSION,
-      IL_PARENTHESIZED_EXPRESSION, IL_SELECT_EXPRESSION, IL_UNARY_EXPRESSION, IL_VARIABLE),
+      IL_PARENTHESIZED_EXPRESSION, IL_SELECT_EXPRESSION, IL_STRING_LITERAL_EXPRESSION, IL_UNARY_EXPRESSION,
+      IL_VARIABLE),
   };
 
   /* ********************************************************** */
@@ -250,7 +251,8 @@ public class HILParser implements PsiParser, LightPsiParser {
   // 11: POSTFIX(ILIndexSelectExpression)
   // 12: ATOM(ILVariable)
   // 13: PREFIX(ILUnaryExpression)
-  // 14: ATOM(ILLiteralExpression)
+  // 14: ATOM(ILStringLiteralExpression)
+  // 15: ATOM(ILLiteralExpression)
   public static boolean ILExpression(PsiBuilder b, int l, int g) {
     if (!recursion_guard_(b, l, "ILExpression")) return false;
     addVariant(b, "<expression>");
@@ -260,6 +262,7 @@ public class HILParser implements PsiParser, LightPsiParser {
     if (!r) r = ILExpressionHolder(b, l + 1);
     if (!r) r = ILVariable(b, l + 1);
     if (!r) r = ILUnaryExpression(b, l + 1);
+    if (!r) r = ILStringLiteralExpression(b, l + 1);
     if (!r) r = ILLiteralExpression(b, l + 1);
     p = r;
     r = r && ILExpression_0(b, l + 1, g);
@@ -431,13 +434,23 @@ public class HILParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // literal /*| identifier*/ | number | 'true' | 'false' | 'null'
+  // literal
+  public static boolean ILStringLiteralExpression(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "ILStringLiteralExpression")) return false;
+    if (!nextTokenIsSmart(b, DOUBLE_QUOTED_STRING)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, IL_STRING_LITERAL_EXPRESSION, "<StringLiteral>");
+    r = literal(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // number | 'true' | 'false' | 'null'
   public static boolean ILLiteralExpression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ILLiteralExpression")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, IL_LITERAL_EXPRESSION, "<Literal>");
-    r = literal(b, l + 1);
-    if (!r) r = number(b, l + 1);
+    r = number(b, l + 1);
     if (!r) r = consumeTokenSmart(b, TRUE);
     if (!r) r = consumeTokenSmart(b, FALSE);
     if (!r) r = consumeTokenSmart(b, NULL);
