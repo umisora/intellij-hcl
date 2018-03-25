@@ -92,7 +92,7 @@ class ResourceBlockSubNameInsertHandler(val type: BlockType) : BasicInsertHandle
       editor.caretModel.moveToOffset(offset)
     }
     if (type.properties.isNotEmpty()) {
-      InsertHandlersUtil.addHCLBlockRequiredProperties(file, editor, project)
+      InsertHandlersUtil.addHCLBlockAllProperties(file, editor, project)
     }
   }
 }

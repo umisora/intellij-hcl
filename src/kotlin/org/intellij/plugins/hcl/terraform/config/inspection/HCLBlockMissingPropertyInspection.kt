@@ -49,6 +49,14 @@ class HCLBlockMissingPropertyInspection : LocalInspectionTool() {
 
     return MyEV(holder, recursive)
   }
+  fun buildAllVisitor(holder: ProblemsHolder, isOnTheFly: Boolean, recursive: Boolean): PsiElementVisitor {
+    val ft = holder.file.fileType
+    if (ft != TerraformFileType) {
+      return super.buildVisitor(holder, isOnTheFly)
+    }
+
+    return MyAllEV(holder, recursive)
+  }
 
   inner class MyEV(val holder: ProblemsHolder, val recursive: Boolean) : HCLElementVisitor() {
     override fun visitBlock(block: HCLBlock) {
@@ -70,12 +78,54 @@ class HCLBlockMissingPropertyInspection : LocalInspectionTool() {
     }
   }
 
+  inner class MyAllEV(val holder: ProblemsHolder, val recursive: Boolean) : HCLElementVisitor() {
+    override fun visitBlock(block: HCLBlock) {
+      ProgressIndicatorProvider.checkCanceled()
+      block.getNameElementUnquoted(0) ?: return
+      val obj = block.`object` ?: return
+      val properties = ModelHelper.getBlockProperties(block)
+      doAllCheck(block, holder, properties)
+      if (recursive) {
+        visitElement(obj)
+      }
+    }
+
+    override fun visitElement(element: HCLElement) {
+      super.visitElement(element)
+      if (recursive) {
+        element.acceptChildren(this)
+      }
+    }
+  }
+
   private fun doCheck(block: HCLBlock, holder: ProblemsHolder, properties: Array<out PropertyOrBlockType>) {
     if (properties.isEmpty()) return
     val obj = block.`object` ?: return
     ProgressIndicatorProvider.checkCanceled()
 
     val candidates = ArrayList<PropertyOrBlockType>(properties.filter { it.required && !(it.property?.has_default ?: false) })
+    if (candidates.isEmpty()) return
+    val all = ArrayList<String>()
+    all.addAll(obj.propertyList.map { it.name })
+    all.addAll(obj.blockList.map { it.name }) // TODO: Better block name selection
+
+    ProgressIndicatorProvider.checkCanceled()
+
+    val required = candidates.filterNot { it.name in all }
+
+    if (required.isEmpty()) return
+
+    ProgressIndicatorProvider.checkCanceled()
+
+    holder.registerProblem(block, "Missing required properties: ${required.map { it.name }.joinToString(", ")}", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, AddResourcePropertiesFix(required))
+  }
+
+  private fun doAllCheck(block: HCLBlock, holder: ProblemsHolder, properties: Array<out PropertyOrBlockType>) {
+    if (properties.isEmpty()) return
+    val obj = block.`object` ?: return
+    ProgressIndicatorProvider.checkCanceled()
+
+    val candidates = ArrayList<PropertyOrBlockType>(properties.filter { !(it.name.equals("provider")) && !(it.name.equals("provisioner")) && !(it.name.equals("connection")) && !(it.property?.has_default ?: false) })
     if (candidates.isEmpty()) return
     val all = ArrayList<String>()
     all.addAll(obj.propertyList.map { it.name })
